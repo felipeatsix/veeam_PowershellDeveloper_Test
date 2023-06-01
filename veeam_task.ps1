@@ -1,15 +1,3 @@
-# Let's create a helper function for fine grained customized logging
-function Write-Log($Message, $ErrorMessage) {
-    if ($Message) {
-        Write-Output "[INFO]: $Message"
-        $fileWriter.WriteLine("[INFO]: $Message")
-    }
-    if ($ErrorMessage) {
-        Write-Error "[ERROR]: $ErrorMessage"
-        $fileWriter.WriteLine("[ERROR] $ErrorMessage")
-    }
-}
-
 function Sync-Directory {
     [Cmdletbinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     Param(
@@ -115,5 +103,17 @@ function Sync-Directory {
         Write-Log -message "Destination files final count: $($destinationFiles.count)"
         $fileWriter.Dispose()
         $fileStream.Dispose()
+    }
+}
+
+# Let's create a helper function for fine grained customized logging
+function Write-Log($Message, $ErrorMessage) {
+    if ($Message) {
+        Write-Output "[INFO]: $Message"
+        $fileWriter.WriteLine("[INFO]: $Message")
+    }
+    if ($ErrorMessage) {
+        Write-Error "[ERROR]: $ErrorMessage"
+        $fileWriter.WriteLine("[ERROR] $ErrorMessage")
     }
 }
