@@ -1,3 +1,15 @@
+# Let's create a helper function for fine grained customized logging
+function Write-Log($Message, $ErrorMessage) {
+    if ($Message) {
+        Write-Output "[INFO]: $Message"
+        $fileWriter.WriteLine("[INFO]: $Message")
+    }
+    if ($ErrorMessage) {
+        Write-Error "[ERROR]: $ErrorMessage"
+        $fileWriter.WriteLine("[ERROR] $ErrorMessage")
+    }
+}
+
 function Sync-Directory {
     [Cmdletbinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     Param(
@@ -23,10 +35,14 @@ function Sync-Directory {
         [Parameter(Mandatory = $false)]
         [switch]$Force
     )
-    begin {
+    begin {        
         Write-Verbose "Generating log file: $LogFilePath"
+        
+        # Open the log file with a filestream instance for both synchronous and asynchronous read and write operations.
         $fileStream = [System.IO.File]::Open($LogFilePath, 'Append', 'Write', 'Read')
         $fileWriter = [System.IO.StreamWriter]::new($fileStream)
+        
+        # Let's log all script operation
         try {
             Start-Transcript -Path $LogFilePath -Append
         }
@@ -34,6 +50,7 @@ function Sync-Directory {
             Write-Log -ErrorMessage "Error starting transcript: $($_.Exception.Message)"
         }
 
+        # Let's read and count all files on source and destination folders        
         Write-Verbose -message "Reading source files..."
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
         Write-Log -message "Source files count: $($sourceFiles.count)"
@@ -61,7 +78,7 @@ function Sync-Directory {
                         throw
                     }
                 }
-                # Copy file to destination
+                # Copy file to the destination folder
                 Write-Log -message "Copy file $($file.fullname) => $destinationPath"
                 try {
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force -ErrorAction Stop
@@ -84,29 +101,19 @@ function Sync-Directory {
             }
         }
     }
-    end {
+    end {        
         try {
             Stop-Transcript
         }
         catch {
             Write-Log -ErrorMessage "Error stopping transcript: $($_.Exception.Message)"
-        }                
+        }
+        # Update the files count after operation is done                
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
         Write-Log -message "Source files final count: $($sourceFiles.count)"
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
         Write-Log -message "Destination files final count: $($destinationFiles.count)"
         $fileWriter.Dispose()
         $fileStream.Dispose()
-    }
-}
-
-function Write-Log($Message, $ErrorMessage) {
-    if ($Message) {
-        Write-Output "[INFO]: $Message"
-        $fileWriter.WriteLine("[INFO]: $Message")
-    }
-    if ($ErrorMessage) {
-        Write-Error "[ERROR]: $ErrorMessage"
-        $fileWriter.WriteLine("[ERROR] $ErrorMessage")
     }
 }
