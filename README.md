@@ -17,4 +17,4 @@ Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log
 - `Source` and `Destination` parameters won't work with `relative paths`.
 
 ## Demo
-- ![image](./demo/sync-directory_demo.gif)
+![image](./demo/sync-directory_demo.gif)
