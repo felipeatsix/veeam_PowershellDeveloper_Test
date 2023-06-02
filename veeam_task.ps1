@@ -127,7 +127,7 @@ function Sync-Directory {
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
         Write-Log -message "Source files final count: $($sourceFiles.count)"
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -message "Destination files final count: $($destinationFiles.count)"        
+        Write-Log -message "Destination files final count: $($destinationFiles.count)"
         # Clean up file streams and stop transcript
         $fileWriter.Dispose()
         $fileStream.Dispose()
