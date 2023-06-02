@@ -1,10 +1,14 @@
 # veeam_PowershellDeveloper_Test
 QA Integration Team test
 
-## Challenge
+## Challenge Criteria
 - Implement a script that synchronizes two folders: source and replica.<br>
 - The script should maintain a full, identical copy of source folder at replica folder.<br>
-- The task should be done only using native PowerShell cmdlets.
+- The task should be done only using native PowerShell cmdlets.<br>
+- Synchronization must be one-way: after the synchronization content of the replica folder should be modified to exactly match content of the source folder.
+- File creation/copying/removal operations should be logged to a file and to the console output.<br>
+- Folder paths and log file path should be provided using the command line arguments.<br>
+- Do not use robocopy and similar utilities.
 
 ## My Solution Syntax
 Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
