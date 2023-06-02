@@ -94,7 +94,7 @@ function Sync-Directory {
                     }
                     catch {
                         Write-Log -ErrorMessage "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
-                        # Using return will exit the process block in case of a failure here and move to the end block where we need to do some cleanup operations
+                        # Exit process block and jump to end block
                         return
                     }
                 }
@@ -105,8 +105,8 @@ function Sync-Directory {
                 }
                 catch {
                     Write-Log -ErrorMessage "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
-                    # Using return will exit the process block in case of a failure here and move to the end block where we need to do some cleanup operations
-                    return
+                    # Exit process block and jump to end block
+                    return                    
                 }
             }
         }
@@ -117,7 +117,12 @@ function Sync-Directory {
             if (-not (Test-Path -Path $sourcePath)) {
                 Write-Log "Removing file $($file.Fullname)"
                 if (($Force.IsPresent) -or ($PSCmdlet.ShouldProcess("Remove $($file.fullname)"))) {
-                    Remove-Item -Path $file.FullName -Force
+                    try {
+                        Remove-Item -Path $file.FullName -Force
+                    }
+                    catch {
+                        Write-Log -ErrorMessage "Failed to remove file: $($file.FullName)"                        
+                    }
                 }
             }
         }
