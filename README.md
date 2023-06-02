@@ -4,7 +4,7 @@ QA Integration Team test
 ## Challenge
 - Implement a script that synchronizes two folders: source and replica.<br>
 - The script should maintain a full, identical copy of source folder at replica folder.<br>
-- The test task should be done using PowerShell.
+- The task should be done only using native PowerShell cmdlets.
 
 ## Solution Syntax
 Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
