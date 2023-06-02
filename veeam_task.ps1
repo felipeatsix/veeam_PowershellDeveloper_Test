@@ -1,4 +1,34 @@
 function Sync-Directory {
+    <#
+    .SYNOPSIS
+    Synchronizes two folders, source and replica
+    
+    .DESCRIPTION
+    This function will synchronize a source folder within a replica folder on every run.
+    If any content is removed from source, that content would be removed from the replica on next run, keeping content exactly the same on every run.
+    The script will also copy subfolder structures, but it won't remove subfolders, only its contents if necessary.
+    
+    .PARAMETER Source
+    [MANDATORY] Provides the source folder path
+    
+    .PARAMETER Destination
+    [MANDATORY] Provides the destination folder path
+    
+    .PARAMETER LogFilePath
+    [OPTIONAL] Provides a path and a file name for logging.
+    If no path is provided, a new .txt file is going to be auto generated on same path as the script location.
+    
+    .PARAMETER Force
+    [OPTIONAL] It surpasses the confirmation prompt when files needs to be removed from replica folder.
+    
+    .EXAMPLE
+    Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt
+    This command will synchronize folder c:\source within c:\destination and log the whole operation in c:\log.txt
+    
+    .EXAMPLE
+    Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt -Force
+    This command will do exactly the same as example 1, but it will surpass confirmation prompt in case files needs to be removed from destination.
+#>
     [Cmdletbinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
     Param(
         [Parameter(Mandatory = $true)]
