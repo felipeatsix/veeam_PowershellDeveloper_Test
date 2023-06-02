@@ -9,10 +9,10 @@ function Sync-Directory {
     The script will also copy subfolder structures, but it won't remove subfolders, only its contents if necessary.
     
     .PARAMETER Source
-    [MANDATORY] Provides the source folder path
+    [MANDATORY] Provides the source folder absolute path
     
     .PARAMETER Destination
-    [MANDATORY] Provides the destination folder path
+    [MANDATORY] Provides the destination folder absolute path
     
     .PARAMETER LogFilePath
     [OPTIONAL] Provides a path and a file name for logging.
