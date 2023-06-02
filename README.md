@@ -6,10 +6,10 @@ QA Integration Team test
 - The script should maintain a full, identical copy of source folder at replica folder.<br>
 - The task should be done only using native PowerShell cmdlets.
 
-## Solution Syntax
+## My Solution Syntax
 Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
 
-## Solution Example
+## My Solution Example
 Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt
 
 ## Limitations
