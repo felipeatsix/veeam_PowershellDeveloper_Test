@@ -37,7 +37,7 @@ function Sync-Directory {
                 $path = $_
                 (Test-Path $path) -and (Get-Item $path).PSIsContainer
             })]
-        [string]$Source,
+        [string] $Source,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -45,13 +45,13 @@ function Sync-Directory {
                 $path = $_
                 (Test-Path $path) -and (Get-Item $path).PSIsContainer
             })]
-        [string]$Destination,
+        [string] $Destination,
 
         [Parameter(Mandatory = $false)]
-        [string]$LogFilePath = (Join-Path -Path $PSScriptRoot -ChildPath "SyncDirectory_Log_$(Get-Date -Format 'dd-MM_hh-mm-ss').txt"),
+        [string] $LogFilePath = (Join-Path -Path $PSScriptRoot -ChildPath "SyncDirectory_Log_$(Get-Date -Format 'dd-MM_hh-mm-ss').txt"),
 
         [Parameter(Mandatory = $false)]
-        [switch]$Force
+        [switch] $Force
     )
     begin {
         Write-Verbose "Generating log file: $LogFilePath"
@@ -59,23 +59,15 @@ function Sync-Directory {
         # Open the log file with a filestream instance for asynchronous write operations from Write-Log helper function
         $fileStream = [System.IO.File]::Open($LogFilePath, 'Append', 'Write', 'Read')
         $fileWriter = [System.IO.StreamWriter]::new($fileStream)
-        
-        # Let's log all script operation
-        try {
-            Start-Transcript -Path $LogFilePath -Append
-        }
-        catch {
-            Write-Log -ErrorMessage "Error starting transcript: $($_.Exception.Message)"
-        }
 
         # Let's read and count all files on source and destination folders
         Write-Verbose -message "Reading source files..."
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        Write-Log -message "Source files count: $($sourceFiles.count)"
+        Write-Log -InformationLevel Info -Message "Source files count: $($sourceFiles.count)"
 
         Write-Verbose -message "Reading destination files..."
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -message "Destination files count: $($destinationFiles.count)"
+        Write-Log -InformationLevel Info -Message "Destination files count: $($destinationFiles.count)"
     }
     process {
         foreach ($file in $sourceFiles) {
@@ -88,23 +80,23 @@ function Sync-Directory {
                 # In case file is not in sync state, verify if it is contained within a subfolder, if so, create the folder first
                 $destinationSubfolder = Split-Path -Path $destinationPath -Parent
                 if (-not (Test-Path -Path $destinationSubfolder)) {
-                    Write-Log -message "Copy directory $($file.Directory.FullName) => $destinationSubFolder..."
+                    Write-Log -InformationLevel Info -Message "Copy directory $($file.Directory.FullName) => $destinationSubFolder..."
                     try {
                         New-Item -ItemType Directory -Path $destinationSubfolder -Force -ErrorAction Stop | Out-Null
                     }
                     catch {
-                        Write-Log -ErrorMessage "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
+                        Write-Log -InformationLevel Error -Message "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
                         # Exit process block and jump to end block
                         return
                     }
                 }
                 # Copy file to destination
-                Write-Log -message "Copy file $($file.fullname) => $destinationPath"
+                Write-Log -InformationLevel Info -Message "Copy file $($file.fullname) => $destinationPath"
                 try {
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force -ErrorAction Stop
                 }
                 catch {
-                    Write-Log -ErrorMessage "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
+                    Write-Log -InformationLevel Error -Message "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
                     # Exit process block and jump to end block
                     return                    
                 }
@@ -115,13 +107,13 @@ function Sync-Directory {
             Write-Verbose "Verifying files that no longer exists in the source..."
             $sourcePath = Join-Path -Path $source -ChildPath $file.FullName.replace($destination, "")
             if (-not (Test-Path -Path $sourcePath)) {
-                Write-Log "Removing file $($file.Fullname)"
+                Write-Log -InformationLevel Info -Message "Removing file $($file.Fullname)"
                 if (($Force.IsPresent) -or ($PSCmdlet.ShouldProcess("Remove $($file.fullname)"))) {
                     try {
                         Remove-Item -Path $file.FullName -Force
                     }
                     catch {
-                        Write-Log -ErrorMessage "Failed to remove file: $($file.FullName)"                        
+                        Write-Log -InformationLevel Error -Message "Failed to remove file: $($file.FullName)"                        
                     }
                 }
             }
@@ -130,29 +122,32 @@ function Sync-Directory {
     end {
         # Update the files count after operation is done
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        Write-Log -message "Source files final count: $($sourceFiles.count)"
+        Write-Log -InformationLevel Info -Message "Source files final count: $($sourceFiles.count)"
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -message "Destination files final count: $($destinationFiles.count)"
-        # Clean up file streams and stop transcript
+        Write-Log -InformationLevel Info -Message "Destination files final count: $($destinationFiles.count)"
+        # Clean up file streams
         $fileWriter.Dispose()
         $fileStream.Dispose()
-        try {
-            Stop-Transcript
-        }
-        catch {
-            Write-Log -ErrorMessage "Error stopping transcript: $($_.Exception.Message)"
-        }
     }
 }
 
-# Let's create a helper function for fine grained customized logging
-function Write-Log($Message, $ErrorMessage) {
-    if ($Message) {
-        Write-Output "[INFO]: $Message"
-        $fileWriter.WriteLine("[INFO]: $Message")
+# Let's create a wrapper function for fine grained customized logging
+function Write-Log {
+    Param(    
+        [string] $Message, 
+
+        [ValidateSet("Info", "Error")]
+        [string] $InformationLevel
+    )     
+    switch ($InformationLevel) {
+        "INFO" {
+            $text = "[INFO]: $Message"
+            Write-Output $text
+        }
+        "ERROR" {
+            $text = "[ERROR]: $Message"
+            Write-Error $text
+        }
     }
-    if ($ErrorMessage) {
-        Write-Error "[ERROR]: $ErrorMessage"
-        $fileWriter.WriteLine("[ERROR] $ErrorMessage")
-    }
+    $fileWriter.WriteLine($text)    
 }
