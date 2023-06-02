@@ -103,8 +103,8 @@ function Sync-Directory {
             }
         }
         # Remove any files in destination folder that no longer exists in source folder
+        Write-Verbose "Verifying files that no longer exists in the source..."
         foreach ($file in $destinationFiles) {
-            Write-Verbose "Verifying files that no longer exists in the source..."
             $sourcePath = Join-Path -Path $source -ChildPath $file.FullName.replace($destination, "")
             if (-not (Test-Path -Path $sourcePath)) {
                 Write-Log -InformationLevel Info -Message "Removing file $($file.Fullname)"
