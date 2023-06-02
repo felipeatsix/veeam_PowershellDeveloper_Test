@@ -6,7 +6,7 @@ Implement a script that synchronizes two folders: source and replica.
 The script should maintain a full, identical copy of source folder at replica folder. 
 The test task should be done using the PowerShell.
 
-## Solution
+## Solution Syntax
 Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
 
 ## Solution Example
