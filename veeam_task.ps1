@@ -101,7 +101,6 @@ function Sync-Directory {
                 # Copy file to destination
                 Write-Log -message "Copy file $($file.fullname) => $destinationPath"
                 try {
-                    bla
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force -ErrorAction Stop
                 }
                 catch {
