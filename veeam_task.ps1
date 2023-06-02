@@ -120,12 +120,6 @@ function Sync-Directory {
         }
     }
     end {        
-        try {
-            Stop-Transcript
-        }
-        catch {
-            Write-Log -ErrorMessage "Error stopping transcript: $($_.Exception.Message)"
-        }
         # Update the files count after operation is done                
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
         Write-Log -message "Source files final count: $($sourceFiles.count)"
@@ -133,6 +127,12 @@ function Sync-Directory {
         Write-Log -message "Destination files final count: $($destinationFiles.count)"
         $fileWriter.Dispose()
         $fileStream.Dispose()
+        try {
+            Stop-Transcript
+        }
+        catch {
+            Write-Log -ErrorMessage "Error stopping transcript: $($_.Exception.Message)"
+        }
     }
 }
 
