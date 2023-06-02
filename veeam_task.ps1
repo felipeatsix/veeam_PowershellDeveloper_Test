@@ -55,11 +55,11 @@ function Sync-Directory {
     )
     begin {
         Write-Verbose "Generating log file: $LogFilePath"
-
-        # Open the log file with a filestream instance for both synchronous and asynchronous read and write operations.
+        
+        # Open the log file with a filestream instance for asynchronous write operations from Write-Log helper function
         $fileStream = [System.IO.File]::Open($LogFilePath, 'Append', 'Write', 'Read')
         $fileWriter = [System.IO.StreamWriter]::new($fileStream)
-
+        
         # Let's log all script operation
         try {
             Start-Transcript -Path $LogFilePath -Append
