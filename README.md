@@ -7,7 +7,7 @@ The script should maintain a full, identical copy of source folder at replica fo
 The test task should be done using PowerShell.
 
 ## Solution Syntax
-Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
 
 ## Solution Example
 Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt
