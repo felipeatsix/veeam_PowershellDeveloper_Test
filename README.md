@@ -1,5 +1,5 @@
 # veeam_PowershellDeveloper_Test
-QA Integration Team Test Task
+QA Integration Team test
 
 ## Challenge
 Implement a script that synchronizes two folders: source and replica. 
