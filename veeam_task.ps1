@@ -106,7 +106,7 @@ function Sync-Directory {
                     }
                     catch {
                         $logError.Message = "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
-                        Write-Log @logInfo
+                        Write-Log @logError
                         # Exit process block and jump to end block
                         return
                     }
