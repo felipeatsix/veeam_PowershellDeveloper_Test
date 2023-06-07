@@ -70,7 +70,6 @@ function Sync-Directory {
         
         $writeLogError = $baseLogParams.Clone()
         $writeLogError.InformationLevel = "Error"
-        
 
         # Let's read and count all files on source and destination folders
         Write-Verbose -message "Reading source files..."
@@ -150,7 +149,6 @@ function Sync-Directory {
         $fileStream.Dispose()
     }
 }
-
 # Let's create a wrapper function for fine grained customized logging
 function Write-Log {
     Param(
