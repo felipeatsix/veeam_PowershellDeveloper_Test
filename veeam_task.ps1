@@ -52,7 +52,7 @@ function Sync-Directory {
 
         [Parameter(Mandatory = $false)]
         [string] $LogFilePath = (Join-Path -Path $PSScriptRoot -ChildPath "SyncDirectory_Log_$(Get-Date -Format 'dd-MM_hh-mm-ss').txt"),
-        
+
         [Parameter(Mandatory = $false)]
         [switch] $IncludeLogTime,
 
@@ -71,10 +71,10 @@ function Sync-Directory {
             FileWriter       = $fileWriter
             Message          = $null
             IncludeLogTime   = $IncludeLogTime.IsPresent
-        }        
+        }
         $writeLogInfo = $baseLogParams.Clone()
-        $writeLogInfo.InformationLevel = "Info"        
-        
+        $writeLogInfo.InformationLevel = "Info"
+
         $writeLogError = $baseLogParams.Clone()
         $writeLogError.InformationLevel = "Error"
 
@@ -170,17 +170,17 @@ function Write-Log {
 
         [switch] $IncludeLogTime
     )
+    $text = $null
+    if ($IncludeLogTime) {
+        $text = "[$(Get-Date -Format "dd-MM_hh-mm")]"
+    }
     switch ($InformationLevel) {
         "INFO" {
-            $text = "[INFO]: $Message"
-            if ($IncludeLogTime) {
-                $date = Get-Date -Format "dd-MM_hh-mm"
-                $text = "[$date]" + "$text"
-            }
+            $text += "[INFO]: $Message"
             Write-Output $text
         }
         "ERROR" {
-            $text = "[ERROR]: $Message"
+            $text += "[ERROR]: $Message"
             Write-Error $text
         }
     }
