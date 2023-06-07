@@ -55,19 +55,33 @@ function Sync-Directory {
     )
     begin {
         Write-Verbose "Generating log file: $LogFilePath"
-        
+
         # Open the log file with a filestream instance for asynchronous write operations from Write-Log helper function
         $fileStream = [System.IO.File]::Open($LogFilePath, 'Append', 'Write', 'Read')
         $fileWriter = [System.IO.StreamWriter]::new($fileStream)
 
+        $baseLogParams = @{
+            InformationLevel = $null
+            FileWriter       = $fileWriter
+            Message          = $null
+        }        
+        $writeLogInfo = $baseLogParams.Clone()
+        $writeLogInfo.InformationLevel = "Info"        
+        
+        $writeLogError = $baseLogParams.Clone()
+        $writeLogError.InformationLevel = "Error"
+        
+
         # Let's read and count all files on source and destination folders
         Write-Verbose -message "Reading source files..."
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        Write-Log -InformationLevel Info -Message "Source files count: $($sourceFiles.count)"
+        $writeLogInfo.Message = "Source files count: $($sourceFiles.count)"
+        Write-Log @writeLogInfo
 
         Write-Verbose -message "Reading destination files..."
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -InformationLevel Info -Message "Destination files count: $($destinationFiles.count)"
+        $writeLogInfo.Message = "Destination files count: $($destinationFiles.count)"
+        Write-Log @writeLogInfo
     }
     process {
         foreach ($file in $sourceFiles) {
@@ -80,25 +94,29 @@ function Sync-Directory {
                 # In case file is not in sync state, verify if it is contained within a subfolder, if so, create the folder first
                 $destinationSubfolder = Split-Path -Path $destinationPath -Parent
                 if (-not (Test-Path -Path $destinationSubfolder)) {
-                    Write-Log -InformationLevel Info -Message "Copy directory $($file.Directory.FullName) => $destinationSubFolder..."
+                    $writeLogInfo.Message = "Copying directory $($file.Directory.FullName) => $destinationSubFolder..."
+                    Write-Log @writeLogInfo
                     try {
                         New-Item -ItemType Directory -Path $destinationSubfolder -Force -ErrorAction Stop | Out-Null
                     }
                     catch {
-                        Write-Log -InformationLevel Error -Message "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
+                        $writeLogError.Message = "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
+                        Write-Log @writeLogInfo
                         # Exit process block and jump to end block
                         return
                     }
                 }
                 # Copy file to destination
-                Write-Log -InformationLevel Info -Message "Copy file $($file.fullname) => $destinationPath"
+                $writeLogInfo.Message = "Copying file $($file.fullname) => $destinationPath"
+                Write-Log @writeLogInfo
                 try {
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force -ErrorAction Stop
                 }
                 catch {
-                    Write-Log -InformationLevel Error -Message "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
+                    $writeLogError.Messsage = "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
+                    Write-Log @writeLogError
                     # Exit process block and jump to end block
-                    return                    
+                    return
                 }
             }
         }
@@ -107,13 +125,15 @@ function Sync-Directory {
         foreach ($file in $destinationFiles) {
             $sourcePath = Join-Path -Path $source -ChildPath $file.FullName.replace($destination, "")
             if (-not (Test-Path -Path $sourcePath)) {
-                Write-Log -InformationLevel Info -Message "Removing file $($file.Fullname)"
+                $writeLogInfo.Message = "Removing file $($file.Fullname)"
+                Write-Log @writeLogInfo
                 if (($Force.IsPresent) -or ($PSCmdlet.ShouldProcess("Remove $($file.fullname)"))) {
                     try {
                         Remove-Item -Path $file.FullName -Force
                     }
                     catch {
-                        Write-Log -InformationLevel Error -Message "Failed to remove file: $($file.FullName)"                        
+                        $writeLogError.Message = "Failed to remove file: $($file.FullName)"
+                        Write-Log @writeLogError
                     }
                 }
             }
@@ -122,9 +142,9 @@ function Sync-Directory {
     end {
         # Update the files count after operation is done
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        Write-Log -InformationLevel Info -Message "Source files final count: $($sourceFiles.count)"
+        Write-Log -InformationLevel Info -FileWriter $fileWriter -Message "Source files final count: $($sourceFiles.count)"
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -InformationLevel Info -Message "Destination files final count: $($destinationFiles.count)"
+        Write-Log -InformationLevel Info -FileWriter $fileWriter -Message "Destination files final count: $($destinationFiles.count)"
         # Clean up file streams
         $fileWriter.Dispose()
         $fileStream.Dispose()
@@ -133,21 +153,22 @@ function Sync-Directory {
 
 # Let's create a wrapper function for fine grained customized logging
 function Write-Log {
-    Param(    
-        [string] $Message, 
+    Param(
+        [string] $Message,
 
         [ValidateSet("Info", "Error")]
-        [string] $InformationLevel
-    )     
+        [string] $InformationLevel,
+
+        [System.IO.StreamWriter] $FileWriter
+    )
     switch ($InformationLevel) {
         "INFO" {
             $text = "[INFO]: $Message"
-            Write-Output $text
         }
         "ERROR" {
             $text = "[ERROR]: $Message"
-            Write-Error $text
         }
     }
-    $fileWriter.WriteLine($text)    
+    Write-Output $text
+    $FileWriter.WriteLine($text)
 }
