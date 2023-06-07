@@ -11,10 +11,14 @@ QA Integration Team test
 - Do not use robocopy and similar utilities.
 
 ## My Solution Syntax
+```Powershell
 Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-IncludeLogTime] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
+```
 
 ## My Solution Example
+```Powershell
 Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt
+```
 
 ## Limitations
 - Subfolders won't be deleted from destination folders, only its contents.
