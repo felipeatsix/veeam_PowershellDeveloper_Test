@@ -18,6 +18,9 @@ function Sync-Directory {
     [OPTIONAL] Provides a path and a file name for logging.
     If no path is provided, a new .txt file is going to be auto generated on same path as the script location.
 
+    .PARAMETER IncludeLogTime
+    [OPTIONAL] Includes the date for the information messages in the log file in the format "dd-MM_hh-ss"
+
     .PARAMETER Force
     [OPTIONAL] It surpasses the confirmation prompt when files needs to be removed from replica folder.
 
@@ -49,6 +52,9 @@ function Sync-Directory {
 
         [Parameter(Mandatory = $false)]
         [string] $LogFilePath = (Join-Path -Path $PSScriptRoot -ChildPath "SyncDirectory_Log_$(Get-Date -Format 'dd-MM_hh-mm-ss').txt"),
+        
+        [Parameter(Mandatory = $false)]
+        [switch] $IncludeLogTime,
 
         [Parameter(Mandatory = $false)]
         [switch] $Force
@@ -64,6 +70,7 @@ function Sync-Directory {
             InformationLevel = $null
             FileWriter       = $fileWriter
             Message          = $null
+            IncludeLogTime   = $IncludeLogTime.IsPresent
         }        
         $writeLogInfo = $baseLogParams.Clone()
         $writeLogInfo.InformationLevel = "Info"        
@@ -141,9 +148,11 @@ function Sync-Directory {
     end {
         # Update the files count after operation is done
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        Write-Log -InformationLevel Info -FileWriter $fileWriter -Message "Source files final count: $($sourceFiles.count)"
+        $writeLogInfo.Message = "Source files final count: $($sourceFiles.count)"
+        Write-Log @writeLogInfo
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        Write-Log -InformationLevel Info -FileWriter $fileWriter -Message "Destination files final count: $($destinationFiles.count)"
+        $writeLogInfo.Message = "Destination files final count: $($destinationFiles.count)"
+        Write-Log @writeLogInfo
         # Clean up file streams
         $fileWriter.Dispose()
         $fileStream.Dispose()
@@ -157,11 +166,17 @@ function Write-Log {
         [ValidateSet("Info", "Error")]
         [string] $InformationLevel,
 
-        [System.IO.StreamWriter] $FileWriter
+        [System.IO.StreamWriter] $FileWriter,
+
+        [switch] $IncludeLogTime
     )
     switch ($InformationLevel) {
         "INFO" {
             $text = "[INFO]: $Message"
+            if ($IncludeLogTime) {
+                $date = Get-Date -Format "dd-MM_hh-mm"
+                $text = "[$date]" + "$text"
+            }
         }
         "ERROR" {
             $text = "[ERROR]: $Message"
