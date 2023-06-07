@@ -177,11 +177,12 @@ function Write-Log {
                 $date = Get-Date -Format "dd-MM_hh-mm"
                 $text = "[$date]" + "$text"
             }
+            Write-Output $text
         }
         "ERROR" {
             $text = "[ERROR]: $Message"
+            Write-Error $text
         }
     }
-    Write-Output $text
     $FileWriter.WriteLine($text)
 }
