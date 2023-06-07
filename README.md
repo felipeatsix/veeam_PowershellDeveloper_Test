@@ -19,6 +19,3 @@ Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log
 ## Limitations
 - Subfolders won't be deleted from destination folders, only its contents.
 - `Source` and `Destination` parameters won't work with `relative paths`.
-
-## Demo
-![image](./demo/sync-directory_demo.gif)
