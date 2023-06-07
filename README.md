@@ -11,7 +11,7 @@ QA Integration Team test
 - Do not use robocopy and similar utilities.
 
 ## My Solution Syntax
-Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
+Sync-Directory [-Source] <String> [-Destination] <String> [[-LogFilePath] <String>] [-IncludeLogTime] [-Force] [-WhatIf] [-Confirm] [CommonParameters]
 
 ## My Solution Example
 Sync-Directory -Source c:\source -Destination c:\destination -LogFilePath c:\log.txt
