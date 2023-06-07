@@ -72,22 +72,21 @@ function Sync-Directory {
             Message          = $null
             IncludeLogTime   = $IncludeLogTime.IsPresent
         }
-        $writeLogInfo = $baseLogParams.Clone()
-        $writeLogInfo.InformationLevel = "Info"
-
-        $writeLogError = $baseLogParams.Clone()
-        $writeLogError.InformationLevel = "Error"
+        $logInfo = $baseLogParams.Clone()
+        $logInfo.InformationLevel = "Info"
+        $logError = $baseLogParams.Clone()
+        $logError.InformationLevel = "Error"
 
         # Let's read and count all files on source and destination folders
         Write-Verbose -message "Reading source files..."
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        $writeLogInfo.Message = "Source files count: $($sourceFiles.count)"
-        Write-Log @writeLogInfo
+        $logInfo.Message = "Source files count: $($sourceFiles.count)"
+        Write-Log @logInfo
 
         Write-Verbose -message "Reading destination files..."
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        $writeLogInfo.Message = "Destination files count: $($destinationFiles.count)"
-        Write-Log @writeLogInfo
+        $logInfo.Message = "Destination files count: $($destinationFiles.count)"
+        Write-Log @logInfo
     }
     process {
         foreach ($file in $sourceFiles) {
@@ -100,27 +99,27 @@ function Sync-Directory {
                 # In case file is not in sync state, verify if it is contained within a subfolder, if so, create the folder first
                 $destinationSubfolder = Split-Path -Path $destinationPath -Parent
                 if (-not (Test-Path -Path $destinationSubfolder)) {
-                    $writeLogInfo.Message = "Copying directory $($file.Directory.FullName) => $destinationSubFolder..."
-                    Write-Log @writeLogInfo
+                    $logInfo.Message = "Copying directory $($file.Directory.FullName) => $destinationSubFolder..."
+                    Write-Log @logInfo
                     try {
                         New-Item -ItemType Directory -Path $destinationSubfolder -Force -ErrorAction Stop | Out-Null
                     }
                     catch {
-                        $writeLogError.Message = "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
-                        Write-Log @writeLogInfo
+                        $logError.Message = "Failed to create directory: $destinationSubfolder. Error: $($_.Exception.Message)"
+                        Write-Log @logInfo
                         # Exit process block and jump to end block
                         return
                     }
                 }
                 # Copy file to destination
-                $writeLogInfo.Message = "Copying file $($file.fullname) => $destinationPath"
-                Write-Log @writeLogInfo
+                $logInfo.Message = "Copying file $($file.fullname) => $destinationPath"
+                Write-Log @logInfo
                 try {
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force -ErrorAction Stop
                 }
                 catch {
-                    $writeLogError.Messsage = "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
-                    Write-Log @writeLogError
+                    $logError.Messsage = "Failed to copy file: $($file.fullname) => $destinationPath. Error: $($_.Exception.Message)"
+                    Write-Log @logError
                     # Exit process block and jump to end block
                     return
                 }
@@ -131,15 +130,15 @@ function Sync-Directory {
         foreach ($file in $destinationFiles) {
             $sourcePath = Join-Path -Path $source -ChildPath $file.FullName.replace($destination, "")
             if (-not (Test-Path -Path $sourcePath)) {
-                $writeLogInfo.Message = "Removing file $($file.Fullname)"
-                Write-Log @writeLogInfo
+                $logInfo.Message = "Removing file $($file.Fullname)"
+                Write-Log @logInfo
                 if (($Force.IsPresent) -or ($PSCmdlet.ShouldProcess("Remove $($file.fullname)"))) {
                     try {
                         Remove-Item -Path $file.FullName -Force
                     }
                     catch {
-                        $writeLogError.Message = "Failed to remove file: $($file.FullName)"
-                        Write-Log @writeLogError
+                        $logError.Message = "Failed to remove file: $($file.FullName)"
+                        Write-Log @logError
                     }
                 }
             }
@@ -148,11 +147,11 @@ function Sync-Directory {
     end {
         # Update the files count after operation is done
         $sourceFiles = Get-ChildItem -Path $Source -Recurse -File
-        $writeLogInfo.Message = "Source files final count: $($sourceFiles.count)"
-        Write-Log @writeLogInfo
+        $logInfo.Message = "Source files final count: $($sourceFiles.count)"
+        Write-Log @logInfo
         $destinationFiles = Get-ChildItem -Path $Destination -Recurse -File
-        $writeLogInfo.Message = "Destination files final count: $($destinationFiles.count)"
-        Write-Log @writeLogInfo
+        $logInfo.Message = "Destination files final count: $($destinationFiles.count)"
+        Write-Log @logInfo
         # Clean up file streams
         $fileWriter.Dispose()
         $fileStream.Dispose()
